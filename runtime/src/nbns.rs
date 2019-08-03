@@ -6,11 +6,15 @@
 
 /// For more guidance on Substrate modules, see the example module
 /// https://github.com/paritytech/substrate/blob/master/srml/example/src/lib.rs
-use support::{decl_event, decl_module, decl_storage, dispatch::Result, StorageValue};
+use support::{
+    decl_event, decl_module, decl_storage,
+    dispatch::{Result, Vec},
+    ensure, StorageMap, StorageValue,
+};
 use system::ensure_signed;
 
 /// The module's configuration trait.
-pub trait Trait: system::Trait {
+pub trait Trait: generic_asset::Trait {
     // TODO: Add other types and constants required configure this module.
 
     /// The overarching event type.
@@ -24,6 +28,8 @@ decl_storage! {
         // Here we are declaring a StorageValue, `Something` as a Option<u32>
         // `get(something)` is the default getter which returns either the stored `u32` or `None` if nothing stored
         Something get(something): Option<u32>;
+        Domains get(domains): map Vec<u8> => Option<T::AccountId>;
+        Addresses get(addresses): map (Vec<u8>, Vec<u8>) => Option<Vec<u8>>;
     }
 }
 
@@ -47,6 +53,39 @@ decl_module! {
 
             // here we are raising the Something event
             Self::deposit_event(RawEvent::SomethingStored(something, who));
+            Ok(())
+        }
+
+        pub fn purchase(origin, domain: Vec<u8>) -> Result {
+            let who = ensure_signed(origin)?;
+            ensure!(!<Domains<T>>::exists(domain.clone()), "domain name is unavailable");
+            <Domains<T>>::insert(domain, who);
+            Ok(())
+        }
+
+        pub fn delete(origin, domain: Vec<u8>) -> Result {
+            let who = ensure_signed(origin)?;
+            if let Some(owner) = <Domains<T>>::get(domain.clone()) {
+                ensure!(owner == who, "you don't own the domain");
+                <Domains<T>>::remove(domain);
+                return Ok(());
+            }
+            Err("domain not found")
+        }
+
+        pub fn ask(origin, domain: Vec<u8>, price: T::Balance) -> Result {
+            Ok(())
+        }
+
+        pub fn buy(origin, domain: Vec<u8>, price: T::Balance) -> Result {
+            Ok(())
+        }
+
+        pub fn add_sub_domain(origin, domain: Vec<u8>, sub_domain: Vec<u8>) -> Result {
+            Ok(())
+        }
+
+        pub fn query(origin, domain: Vec<u8>, sub_domain: Vec<u8>) -> Result {
             Ok(())
         }
     }
