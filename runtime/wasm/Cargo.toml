@@ -1,23 +1,23 @@
 [package]
-name = 'cennznet-runtime-template-runtime-wasm'
+name = 'cennznet-nbns-runtime-wasm'
 version = '1.0.0'
 authors = ['Centrality Developers <support@centrality.ai>']
 edition = '2018'
 
 [lib]
-name = "cennznet_runtime_template"
+name = "cennznet_nbns"
 crate-type = ['cdylib']
 
 [dependencies]
-cennznet-runtime-template-runtime = { path = "..", default-features = false }
+cennznet-nbns-runtime = { path = "..", default-features = false }
 
 [features]
 default = ["core"]
 core = [
-	"cennznet-runtime-template-runtime/core",
+	"cennznet-nbns-runtime/core",
 ]
 std = [
-	"cennznet-runtime-template-runtime/std",
+	"cennznet-nbns-runtime/std",
 ]
 
 [profile.release]

@@ -11,13 +11,13 @@ pub use substrate_cli::{error, IntoExit, VersionInfo};
 
 fn run() -> cli::error::Result<()> {
     let version = VersionInfo {
-        name: "CENNZnet Runtime Template Node",
+        name: "CENNZnet NBNS Node",
         commit: env!("VERGEN_SHA_SHORT"),
         version: env!("CARGO_PKG_VERSION"),
-        executable_name: "cennznet-runtime-template",
+        executable_name: "cennznet-nbns",
         author: "Centrality Developers",
-        description: "CENNZnet Runtime Template",
-        support_url: "https://github.com/cennznet/cennznet-runtime-template/issues",
+        description: "CENNZnet NBNS",
+        support_url: "https://github.com/en/cennznet-nbns/issues",
     };
     cli::run(::std::env::args(), cli::Exit, version)
 }

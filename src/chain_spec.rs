@@ -1,4 +1,4 @@
-use cennznet_runtime_template_runtime::{
+use cennznet_nbns_runtime::{
     fees, generic_asset, AccountId, CennzxSpotConfig, ConsensusConfig, ContractConfig, Fee,
     FeeRate, FeesConfig, GenericAssetConfig, GenesisConfig, GrandpaConfig, IndicesConfig, Schedule,
     SessionConfig, StakerStatus, StakingConfig, SudoConfig, TimestampConfig,
@@ -122,89 +122,104 @@ fn testnet_genesis(
     root_key: AccountId,
 ) -> GenesisConfig {
     GenesisConfig {
-		consensus: Some(ConsensusConfig {
-			code: include_bytes!("../runtime/wasm/target/wasm32-unknown-unknown/release/cennznet_runtime_template.compact.wasm").to_vec(),
-			authorities: initial_authorities.iter().map(|x| x.2.clone()).collect(),
-		}),
-		system: None,
-		timestamp: Some(TimestampConfig {
-			minimum_period: 3, // 6 second block time.
-		}),
-		indices: Some(IndicesConfig {
-			ids: endowed_accounts.clone(),
-		}),
+        consensus: Some(ConsensusConfig {
+            code: include_bytes!(
+                "../runtime/wasm/target/wasm32-unknown-unknown/release/cennznet_nbns.compact.wasm"
+            )
+            .to_vec(),
+            authorities: initial_authorities.iter().map(|x| x.2.clone()).collect(),
+        }),
+        system: None,
+        timestamp: Some(TimestampConfig {
+            minimum_period: 3, // 6 second block time.
+        }),
+        indices: Some(IndicesConfig {
+            ids: endowed_accounts.clone(),
+        }),
         session: Some(SessionConfig {
-			validators: initial_authorities.iter().map(|x| x.1.clone()).collect(),
-			session_length: 10,
-			keys: initial_authorities
-				.iter()
-				.map(|x| (x.1.clone(), x.2.clone()))
-				.collect::<Vec<_>>(),
-		}),
+            validators: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+            session_length: 10,
+            keys: initial_authorities
+                .iter()
+                .map(|x| (x.1.clone(), x.2.clone()))
+                .collect::<Vec<_>>(),
+        }),
         staking: Some(StakingConfig {
-			current_era: 0,
-			minimum_validator_count: 1,
-			validator_count: 4,
-			sessions_per_era: 5,
-			bonding_duration: 12,
-			offline_slash: Default::default(),
-			session_reward: Default::default(),
-			current_session_reward: 0,
-			offline_slash_grace: 0,
-			stakers: initial_authorities
-				.iter()
-				.map(|x| (x.0.clone(), x.1.clone(), 1_000_000_000, StakerStatus::Validator))
-				.collect(),
-			invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
-		}),
-		generic_asset: Some(GenericAssetConfig {
-			assets: vec![16000, 16001],
-			initial_balance: 10u128.pow(10),
-			endowed_accounts: endowed_accounts.clone().into_iter().map(Into::into).collect(),
-			next_asset_id: 17000,
-			create_asset_stake: 0,
-			staking_asset_id: 16000,
-			spending_asset_id: 16001,
-		}),
-		fees: Some(FeesConfig {
-			_genesis_phantom_data: Default::default(),
-			fee_registry: vec![
-				(Fee::fees(fees::Fee::Base), 1),
-				(Fee::fees(fees::Fee::Bytes), 0),
-				(Fee::generic_asset(generic_asset::Fee::Transfer), 1),
-			],
-		}),
-		cennzx_spot: Some(CennzxSpotConfig {
-			fee_rate: FeeRate::from_milli(3),
-			core_asset_id: 16001,
-		}),
-		sudo: Some(SudoConfig {
-			key: root_key,
-		}),
-    	grandpa: Some(GrandpaConfig {
-			authorities: initial_authorities.iter().map(|x| (x.2.clone(), 1)).collect(),
-		}),
+            current_era: 0,
+            minimum_validator_count: 1,
+            validator_count: 4,
+            sessions_per_era: 5,
+            bonding_duration: 12,
+            offline_slash: Default::default(),
+            session_reward: Default::default(),
+            current_session_reward: 0,
+            offline_slash_grace: 0,
+            stakers: initial_authorities
+                .iter()
+                .map(|x| {
+                    (
+                        x.0.clone(),
+                        x.1.clone(),
+                        1_000_000_000,
+                        StakerStatus::Validator,
+                    )
+                })
+                .collect(),
+            invulnerables: initial_authorities.iter().map(|x| x.1.clone()).collect(),
+        }),
+        generic_asset: Some(GenericAssetConfig {
+            assets: vec![16000, 16001],
+            initial_balance: 10u128.pow(10),
+            endowed_accounts: endowed_accounts
+                .clone()
+                .into_iter()
+                .map(Into::into)
+                .collect(),
+            next_asset_id: 17000,
+            create_asset_stake: 0,
+            staking_asset_id: 16000,
+            spending_asset_id: 16001,
+        }),
+        fees: Some(FeesConfig {
+            _genesis_phantom_data: Default::default(),
+            fee_registry: vec![
+                (Fee::fees(fees::Fee::Base), 1),
+                (Fee::fees(fees::Fee::Bytes), 0),
+                (Fee::generic_asset(generic_asset::Fee::Transfer), 1),
+            ],
+        }),
+        cennzx_spot: Some(CennzxSpotConfig {
+            fee_rate: FeeRate::from_milli(3),
+            core_asset_id: 16001,
+        }),
+        sudo: Some(SudoConfig { key: root_key }),
+        grandpa: Some(GrandpaConfig {
+            authorities: initial_authorities
+                .iter()
+                .map(|x| (x.2.clone(), 1))
+                .collect(),
+        }),
         contract: Some(ContractConfig {
-			signed_claim_handicap: 2,
-			rent_byte_price: 1,
-			rent_deposit_offset: 1000,
-			storage_size_offset: 8,
-			surcharge_reward: 150,
-			tombstone_deposit: 16,
-			contract_fee: 1,
-			call_base_fee: 1,
-			create_base_fee: 1,
-			creation_fee: 0,
-			transaction_base_fee: 1,
-			transaction_byte_fee: 0,
-			transfer_fee: 1,
-			gas_price: 1,
-			max_depth: 1024,
-			block_gas_limit: 10_000_000_000,
-			current_schedule: Schedule {
-				enable_println: true,
-				..Default::default()
-			},
-		}),
-	}
+            signed_claim_handicap: 2,
+            rent_byte_price: 1,
+            rent_deposit_offset: 1000,
+            storage_size_offset: 8,
+            surcharge_reward: 150,
+            tombstone_deposit: 16,
+            contract_fee: 1,
+            call_base_fee: 1,
+            create_base_fee: 1,
+            creation_fee: 0,
+            transaction_base_fee: 1,
+            transaction_byte_fee: 0,
+            transfer_fee: 1,
+            gas_price: 1,
+            max_depth: 1024,
+            block_gas_limit: 10_000_000_000,
+            current_schedule: Schedule {
+                enable_println: true,
+                ..Default::default()
+            },
+        }),
+    }
 }

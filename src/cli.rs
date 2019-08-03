@@ -19,7 +19,7 @@ where
     parse_and_execute::<service::Factory, NoCustom, NoCustom, _, _, _, _, _>(
         load_spec,
         &version,
-        "cennznet-runtime-template-node",
+        "cennznet-nbns-node",
         args,
         exit,
         |exit, _cli_args, _custom_args, config| {

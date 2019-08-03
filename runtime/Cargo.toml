@@ -1,5 +1,5 @@
 [package]
-name = 'cennznet-runtime-template-runtime'
+name = 'cennznet-nbns-runtime'
 version = "1.0.0"
 authors = ["Centrality Developers <support@centrality.ai>"]
 edition = "2018"

@@ -3,7 +3,7 @@
 #![warn(unused_extern_crates)]
 
 use basic_authorship::ProposerFactory;
-use cennznet_runtime_template_runtime::{self, opaque::Block, GenesisConfig, RuntimeApi};
+use cennznet_nbns_runtime::{self, opaque::Block, GenesisConfig, RuntimeApi};
 use consensus::{import_queue, start_aura, AuraImportQueue, NothingExtra, SlotDuration};
 use inherents::InherentDataProviders;
 use log::info;
@@ -23,9 +23,9 @@ pub use substrate_executor::NativeExecutor;
 // Our native executor instance.
 native_executor_instance!(
 	pub Executor,
-	cennznet_runtime_template_runtime::api::dispatch,
-	cennznet_runtime_template_runtime::native_version,
-	include_bytes!("../runtime/wasm/target/wasm32-unknown-unknown/release/cennznet_runtime_template.compact.wasm")
+	cennznet_nbns_runtime::api::dispatch,
+	cennznet_nbns_runtime::native_version,
+	include_bytes!("../runtime/wasm/target/wasm32-unknown-unknown/release/cennznet_nbns.compact.wasm")
 );
 
 #[derive(Default)]

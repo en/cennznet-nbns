@@ -1,4 +1,4 @@
-# cennznet-runtime-template
+# cennznet-nbns
 Template project for CENNZnet / Substrate runtime &amp; module development
 
 # Building

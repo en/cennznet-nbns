@@ -2,4 +2,4 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-pub use cennznet_runtime_template_runtime::*;
+pub use cennznet_nbns_runtime::*;

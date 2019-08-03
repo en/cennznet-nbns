@@ -47,8 +47,7 @@ pub use generic_asset;
 
 mod fee;
 
-/// Used for the module template in `./template.rs`
-mod template;
+mod nbns;
 
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
@@ -88,8 +87,8 @@ pub mod opaque {
 
 /// This runtime version.
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-    spec_name: create_runtime_str!("cennznet-runtime-template"),
-    impl_name: create_runtime_str!("cennznet-runtime-template"),
+    spec_name: create_runtime_str!("cennznet-nbns"),
+    impl_name: create_runtime_str!("cennznet-nbns"),
     authoring_version: 3,
     spec_version: 3,
     impl_version: 0,
@@ -247,8 +246,7 @@ impl cennzx_spot::Trait for Runtime {
     type U128ToBalance = Balance;
 }
 
-/// Used for the module template in `./template.rs`
-impl template::Trait for Runtime {
+impl nbns::Trait for Runtime {
     type Event = Event;
 }
 
@@ -271,8 +269,7 @@ construct_runtime!(
 		Sudo: sudo,
 		Fees: fees::{Module, Call, Fee, Storage, Config<T>, Event<T>},
 		CennzxSpot: cennzx_spot::{Module, Call, Storage, Config<T>, Event<T>},
-		// Used for the module template in `./template.rs`
-		TemplateModule: template::{Module, Call, Storage, Event<T>},
+		Nbns: nbns::{Module, Call, Storage, Event<T>},
 	}
 );
 

@@ -36,7 +36,7 @@ git = 'https://github.com/cennznet/plug-blockchain.git'
 package = 'substrate-network'
 branch = 'stable'
 
-[dependencies.cennznet-runtime-template-runtime]
+[dependencies.cennznet-nbns-runtime]
 path = 'runtime'
 
 [dependencies.primitives]
@@ -76,9 +76,9 @@ panic = 'unwind'
 authors = ['Centrality Developers <support@centrality.ai>']
 build = 'build.rs'
 edition = '2018'
-name = 'cennznet-runtime-template'
+name = 'cennznet-nbns'
 version = '1.0.0'
 
 [[bin]]
-name = 'cennznet-runtime-template'
+name = 'cennznet-nbns'
 path = 'src/main.rs'

@@ -280,16 +280,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "cennznet-nbns-runtime-wasm"
-version = "1.0.0"
-dependencies = [
- "cennznet-nbns-runtime 1.0.0",
-]
-
-[[package]]
 name = "cennznet-primitives"
 version = "0.1.0"
-source = "git+https://github.com/cennznet/cennznet?branch=stable#496ee3dfc1fa5e00880d86e0c79ba8bc76bab8ac"
+source = "git+https://github.com/cennznet/cennznet?branch=stable#a565361610bf8bc27da6055dadcea8e5d527ea0c"
 dependencies = [
  "parity-codec 3.5.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.98 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -341,7 +334,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "crml-cennzx-spot"
 version = "0.1.0"
-source = "git+https://github.com/cennznet/cennznet?branch=stable#496ee3dfc1fa5e00880d86e0c79ba8bc76bab8ac"
+source = "git+https://github.com/cennznet/cennznet?branch=stable#a565361610bf8bc27da6055dadcea8e5d527ea0c"
 dependencies = [
  "cennznet-primitives 0.1.0 (git+https://github.com/cennznet/cennznet?branch=stable)",
  "parity-codec 3.5.4 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1648,7 +1641,7 @@ dependencies = [
 [[package]]
 name = "prml-fees"
 version = "0.1.0"
-source = "git+https://github.com/cennznet/cennznet?branch=stable#496ee3dfc1fa5e00880d86e0c79ba8bc76bab8ac"
+source = "git+https://github.com/cennznet/cennznet?branch=stable#a565361610bf8bc27da6055dadcea8e5d527ea0c"
 dependencies = [
  "parity-codec 3.5.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.98 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1663,7 +1656,7 @@ dependencies = [
 [[package]]
 name = "prml-generic-asset"
 version = "0.1.0"
-source = "git+https://github.com/cennznet/cennznet?branch=stable#496ee3dfc1fa5e00880d86e0c79ba8bc76bab8ac"
+source = "git+https://github.com/cennznet/cennznet?branch=stable#a565361610bf8bc27da6055dadcea8e5d527ea0c"
 dependencies = [
  "parity-codec 3.5.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.98 (registry+https://github.com/rust-lang/crates.io-index)",
