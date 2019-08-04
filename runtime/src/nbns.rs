@@ -11,7 +11,7 @@ use runtime_primitives::traits::As;
 use support::{
     decl_event, decl_module, decl_storage,
     dispatch::{Result, Vec},
-    ensure, StorageMap, StorageValue,
+    ensure, StorageMap,
 };
 use system::ensure_signed;
 
@@ -37,10 +37,6 @@ pub trait Trait: generic_asset::Trait {
 // This module's storage items.
 decl_storage! {
     trait Store for Module<T: Trait> as Ubns {
-        // Just a dummy storage item.
-        // Here we are declaring a StorageValue, `Something` as a Option<u32>
-        // `get(something)` is the default getter which returns either the stored `u32` or `None` if nothing stored
-        Something get(something): Option<u32>;
         Domains get(domains): map Vec<u8> => Option<Domain<T::AccountId, PriceOf<T>>>;
         Addresses get(addresses): map (Vec<u8>, Vec<u8>) => Option<Vec<u8>>;
         SubDomains get(sub_domain_by_index): map (Vec<u8>, u64) => Vec<u8>;
@@ -54,22 +50,6 @@ decl_module! {
         // Initializing events
         // this is needed only if you are using events in your module
         fn deposit_event<T>() = default;
-
-        // Just a dummy entry point.
-        // function that can be called by the external world as an extrinsics call
-        // takes a parameter of the type `AccountId`, stores it and emits an event
-        pub fn do_something(origin, something: u32) -> Result {
-            // TODO: You only need this if you want to check it was signed.
-            let who = ensure_signed(origin)?;
-
-            // TODO: Code to execute when something calls this.
-            // For example: the following line stores the passed in u32 in the storage
-            <Something<T>>::put(something);
-
-            // here we are raising the Something event
-            Self::deposit_event(RawEvent::SomethingStored(something, who));
-            Ok(())
-        }
 
         pub fn purchase(origin, domain: Vec<u8>) -> Result {
             let who = ensure_signed(origin)?;
@@ -168,10 +148,6 @@ decl_event!(
     where
         AccountId = <T as system::Trait>::AccountId,
     {
-        // Just a dummy event.
-        // Event `Something` is declared with a parameter of the type `u32` and `AccountId`
-        // To emit this event, we call the deposit funtion, from our runtime funtions
-        SomethingStored(u32, AccountId),
         //
         Purchased(Vec<u8>, AccountId),
         //
