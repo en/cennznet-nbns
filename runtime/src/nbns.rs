@@ -75,11 +75,11 @@ decl_module! {
             let who = ensure_signed(origin)?;
             ensure!(!<Domains<T>>::exists(domain.clone()), "domain name is unavailable");
             let domain_info = Domain {
-                owner: who,
+                owner: who.clone(),
                 price: None,
             };
 
-            <Domains<T>>::insert(domain, domain_info);
+            <Domains<T>>::insert(domain.clone(), domain_info);
 
             Self::deposit_event(RawEvent::Purchased(domain, who));
             Ok(())
@@ -96,8 +96,8 @@ decl_module! {
                     <Addresses<T>>::remove((domain.clone(), sub_domain.clone()));
                     <SubDomains<T>>::remove((domain.clone(), index));
                 }
-                <SubDomainsCount<T>>::remove(domain);
-                
+                <SubDomainsCount<T>>::remove(domain.clone());
+
                 Self::deposit_event(RawEvent::Delete(domain, who));
                 return Ok(());
             }
@@ -111,7 +111,6 @@ decl_module! {
                 domain_info.price = Some((<AssetIdOf<T> as As<u64>>::sa(16000), <BalanceOf<T> as As<u64>>::sa(price)));
                 <Domains<T>>::insert(domain, domain_info);
 
-                Self::deposit_event(RawEvent::Purchased(domain, who,price));
                 return Ok(());
             }
             Err("domain not found")
@@ -133,12 +132,12 @@ decl_module! {
                 }
                 <SubDomainsCount<T>>::remove(domain.clone());
 
-                <Domains<T>>::insert(domain, Domain{
-                    owner: who,
+                <Domains<T>>::insert(domain.clone(), Domain{
+                    owner: who.clone(),
                     price: None,
                 });
 
-                Self::deposit_event(RawEvent::Buy(domain, who,domain_info.owner));
+                Self::deposit_event(RawEvent::Buy(domain, who, domain_info.owner));
                 return Ok(());
             }
             Err("domain not found")
@@ -149,14 +148,14 @@ decl_module! {
             if let Some(domain_info) = <Domains<T>>::get(domain.clone()) {
                 ensure!(domain_info.owner == who, "you don't own the domain");
                 ensure!(!<Addresses<T>>::exists((domain.clone(), sub_domain.clone())), "sub domain is already exists");
-                <Addresses<T>>::insert((domain.clone(), sub_domain.clone()), address);
+                <Addresses<T>>::insert((domain.clone(), sub_domain.clone()), address.clone());
                 let sub_domain_count = Self::sub_domain_count(&domain.clone());
-                <SubDomains<T>>::insert((domain.clone(), sub_domain_count), sub_domain);
+                <SubDomains<T>>::insert((domain.clone(), sub_domain_count), sub_domain.clone());
                 let new_sub_domain_count = sub_domain_count.checked_add(1)
                                 .ok_or("add_sub_domain causes overflow of sub_domain_count")?;
                 <SubDomainsCount<T>>::insert(domain.clone(), new_sub_domain_count);
 
-                Self::deposit_event(RawEvent::Add_sub_domain(who, domain,sub_domain,address));
+                Self::deposit_event(RawEvent::AddSubDomain(who, domain, sub_domain, address));
                 return Ok(());
             }
             Err("domain not found")
@@ -174,15 +173,15 @@ decl_event!(
         // To emit this event, we call the deposit funtion, from our runtime funtions
         SomethingStored(u32, AccountId),
         //
-        Purchased(Vec<u8>,AccountId),
+        Purchased(Vec<u8>, AccountId),
         //
-        Delete(Vec<u8>,AccountId),
+        Delete(Vec<u8>, AccountId),
         //
-        Ask(Vec<u8>,AccountId,u128),
+        Ask(Vec<u8>, AccountId, u128),
         //
-        Buy(Vec<u8>,AccountId,AccountId),
+        Buy(Vec<u8>, AccountId, AccountId),
         //
-        Add_sub_domain(AccountId,Vec<u8>,Vec<u8>,Vec<u8>),
+        AddSubDomain(AccountId, Vec<u8>, Vec<u8>, Vec<u8>),
     }
 );
 
