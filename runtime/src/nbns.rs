@@ -80,6 +80,8 @@ decl_module! {
             };
 
             <Domains<T>>::insert(domain, domain_info);
+
+            Self::deposit_event(RawEvent::Purchased(domain, who));
             Ok(())
         }
 
@@ -95,6 +97,8 @@ decl_module! {
                     <SubDomains<T>>::remove((domain.clone(), index));
                 }
                 <SubDomainsCount<T>>::remove(domain);
+                
+                Self::deposit_event(RawEvent::Delete(domain, who));
                 return Ok(());
             }
             Err("domain not found")
@@ -106,6 +110,8 @@ decl_module! {
                 ensure!(domain_info.owner == who, "you don't own the domain");
                 domain_info.price = Some((<AssetIdOf<T> as As<u64>>::sa(16000), <BalanceOf<T> as As<u64>>::sa(price)));
                 <Domains<T>>::insert(domain, domain_info);
+
+                Self::deposit_event(RawEvent::Purchased(domain, who,price));
                 return Ok(());
             }
             Err("domain not found")
@@ -131,6 +137,8 @@ decl_module! {
                     owner: who,
                     price: None,
                 });
+
+                Self::deposit_event(RawEvent::Buy(domain, who,domain_info.owner));
                 return Ok(());
             }
             Err("domain not found")
@@ -147,6 +155,8 @@ decl_module! {
                 let new_sub_domain_count = sub_domain_count.checked_add(1)
                                 .ok_or("add_sub_domain causes overflow of sub_domain_count")?;
                 <SubDomainsCount<T>>::insert(domain.clone(), new_sub_domain_count);
+
+                Self::deposit_event(RawEvent::Add_sub_domain(who, domain,sub_domain,address));
                 return Ok(());
             }
             Err("domain not found")
@@ -163,6 +173,16 @@ decl_event!(
         // Event `Something` is declared with a parameter of the type `u32` and `AccountId`
         // To emit this event, we call the deposit funtion, from our runtime funtions
         SomethingStored(u32, AccountId),
+        //
+        Purchased(Vec<u8>,AccountId),
+        //
+        Delete(Vec<u8>,AccountId),
+        //
+        Ask(Vec<u8>,AccountId,u128),
+        //
+        Buy(Vec<u8>,AccountId,AccountId),
+        //
+        Add_sub_domain(AccountId,Vec<u8>,Vec<u8>,Vec<u8>),
     }
 );
 
