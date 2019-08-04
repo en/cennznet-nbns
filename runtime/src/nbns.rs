@@ -1,3 +1,4 @@
+use parity_codec::{Decode, Encode};
 /// A runtime module template with necessary imports
 
 /// Feel free to remove or edit this file as needed.
@@ -13,8 +14,15 @@ use support::{
 };
 use system::ensure_signed;
 
+#[derive(Encode, Decode, Default, Clone, PartialEq)]
+#[cfg_attr(feature = "std", derive(Debug))]
+pub struct Domain<AccountId> {
+    owner: AccountId,
+    price: u128,
+}
+
 /// The module's configuration trait.
-pub trait Trait: generic_asset::Trait {
+pub trait Trait: system::Trait {
     // TODO: Add other types and constants required configure this module.
 
     /// The overarching event type.
@@ -28,8 +36,10 @@ decl_storage! {
         // Here we are declaring a StorageValue, `Something` as a Option<u32>
         // `get(something)` is the default getter which returns either the stored `u32` or `None` if nothing stored
         Something get(something): Option<u32>;
-        Domains get(domains): map Vec<u8> => Option<T::AccountId>;
+        Domains get(domains): map Vec<u8> => Option<Domain<T::AccountId>>;
         Addresses get(addresses): map (Vec<u8>, Vec<u8>) => Option<Vec<u8>>;
+        SubDomains get(sub_domain_by_index): map (Vec<u8>, u64) => Vec<u8>;
+        SubDomainsCount get(sub_domain_count): map Vec<u8> => u64;
     }
 }
 
@@ -59,34 +69,81 @@ decl_module! {
         pub fn purchase(origin, domain: Vec<u8>) -> Result {
             let who = ensure_signed(origin)?;
             ensure!(!<Domains<T>>::exists(domain.clone()), "domain name is unavailable");
-            <Domains<T>>::insert(domain, who);
+            let domain_info = Domain {
+                owner: who,
+                price: 0,
+            };
+
+            <Domains<T>>::insert(domain, domain_info);
             Ok(())
         }
 
         pub fn delete(origin, domain: Vec<u8>) -> Result {
             let who = ensure_signed(origin)?;
-            if let Some(owner) = <Domains<T>>::get(domain.clone()) {
-                ensure!(owner == who, "you don't own the domain");
-                <Domains<T>>::remove(domain);
+            if let Some(domain_info) = <Domains<T>>::get(domain.clone()) {
+                ensure!(domain_info.owner == who, "you don't own the domain");
+                <Domains<T>>::remove(domain.clone());
+                let sub_domain_count = <SubDomainsCount<T>>::get(domain.clone());
+                for index in 0..sub_domain_count {
+                    let sub_domain = <SubDomains<T>>::get((domain.clone(), index));
+                    <Addresses<T>>::remove((domain.clone(), sub_domain.clone()));
+                    <SubDomains<T>>::remove((domain.clone(), index));
+                }
+                <SubDomainsCount<T>>::remove(domain);
                 return Ok(());
             }
             Err("domain not found")
         }
 
-        pub fn ask(origin, domain: Vec<u8>, price: T::Balance) -> Result {
-            Ok(())
+        pub fn ask(origin, domain: Vec<u8>, price: u128) -> Result {
+            let who = ensure_signed(origin)?;
+            if let Some(mut domain_info) = <Domains<T>>::get(domain.clone()) {
+                ensure!(domain_info.owner == who, "you don't own the domain");
+                domain_info.price = price;
+                <Domains<T>>::insert(domain, domain_info);
+                return Ok(());
+            }
+            Err("domain not found")
         }
 
-        pub fn buy(origin, domain: Vec<u8>, price: T::Balance) -> Result {
-            Ok(())
+        pub fn buy(origin, domain: Vec<u8>) -> Result {
+            let who = ensure_signed(origin)?;
+            if let Some(domain_info) = <Domains<T>>::get(domain.clone()) {
+                ensure!(domain_info.owner != who, "you already owned the domain");
+                ensure!(domain_info.price != 0, "the domain is not for sale");
+                // <balances::Module<T>>::transfer(&who, &domain_info.owner, domain_info.price)?;
+                <Domains<T>>::remove(domain.clone());
+                let sub_domain_count = <SubDomainsCount<T>>::get(domain.clone());
+                for index in 0..sub_domain_count {
+                    let sub_domain = <SubDomains<T>>::get((domain.clone(), index));
+                    <Addresses<T>>::remove((domain.clone(), sub_domain.clone()));
+                    <SubDomains<T>>::remove((domain.clone(), index));
+                }
+                <SubDomainsCount<T>>::remove(domain.clone());
+
+                <Domains<T>>::insert(domain, Domain{
+                    owner: who,
+                    price: 0,
+                });
+                return Ok(());
+            }
+            Err("domain not found")
         }
 
-        pub fn add_sub_domain(origin, domain: Vec<u8>, sub_domain: Vec<u8>) -> Result {
-            Ok(())
-        }
-
-        pub fn query(origin, domain: Vec<u8>, sub_domain: Vec<u8>) -> Result {
-            Ok(())
+        pub fn add_sub_domain(origin, domain: Vec<u8>, sub_domain: Vec<u8>, address: Vec<u8>) -> Result {
+            let who = ensure_signed(origin)?;
+            if let Some(domain_info) = <Domains<T>>::get(domain.clone()) {
+                ensure!(domain_info.owner == who, "you don't own the domain");
+                ensure!(!<Addresses<T>>::exists((domain.clone(), sub_domain.clone())), "sub domain is already exists");
+                <Addresses<T>>::insert((domain.clone(), sub_domain.clone()), address);
+                let sub_domain_count = Self::sub_domain_count(&domain.clone());
+                let new_sub_domain_count = sub_domain_count.checked_add(1)
+                                .ok_or("add_sub_domain causes overflow of sub_domain_count")?;
+                <SubDomains<T>>::insert((domain.clone(), new_sub_domain_count), sub_domain);
+                <SubDomainsCount<T>>::insert(domain.clone(), new_sub_domain_count);
+                return Ok(());
+            }
+            Err("domain not found")
         }
     }
 }
