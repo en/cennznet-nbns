@@ -1,4 +1,5 @@
 use parity_codec::{Decode, Encode};
+use runtime_primitives::traits::As;
 /// A runtime module template with necessary imports
 
 /// Feel free to remove or edit this file as needed.
@@ -14,15 +15,19 @@ use support::{
 };
 use system::ensure_signed;
 
+pub type BalanceOf<T> = <T as generic_asset::Trait>::Balance;
+pub type AssetIdOf<T> = <T as generic_asset::Trait>::AssetId;
+pub type PriceOf<T> = (AssetIdOf<T>, BalanceOf<T>);
+
 #[derive(Encode, Decode, Default, Clone, PartialEq)]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct Domain<AccountId> {
+pub struct Domain<AccountId, Balance> {
     owner: AccountId,
-    price: u128,
+    price: Option<Balance>,
 }
 
 /// The module's configuration trait.
-pub trait Trait: system::Trait {
+pub trait Trait: generic_asset::Trait {
     // TODO: Add other types and constants required configure this module.
 
     /// The overarching event type.
@@ -36,7 +41,7 @@ decl_storage! {
         // Here we are declaring a StorageValue, `Something` as a Option<u32>
         // `get(something)` is the default getter which returns either the stored `u32` or `None` if nothing stored
         Something get(something): Option<u32>;
-        Domains get(domains): map Vec<u8> => Option<Domain<T::AccountId>>;
+        Domains get(domains): map Vec<u8> => Option<Domain<T::AccountId, PriceOf<T>>>;
         Addresses get(addresses): map (Vec<u8>, Vec<u8>) => Option<Vec<u8>>;
         SubDomains get(sub_domain_by_index): map (Vec<u8>, u64) => Vec<u8>;
         SubDomainsCount get(sub_domain_count): map Vec<u8> => u64;
@@ -71,7 +76,7 @@ decl_module! {
             ensure!(!<Domains<T>>::exists(domain.clone()), "domain name is unavailable");
             let domain_info = Domain {
                 owner: who,
-                price: 0,
+                price: None,
             };
 
             <Domains<T>>::insert(domain, domain_info);
@@ -95,11 +100,11 @@ decl_module! {
             Err("domain not found")
         }
 
-        pub fn ask(origin, domain: Vec<u8>, price: u128) -> Result {
+        pub fn ask(origin, domain: Vec<u8>, price: u64) -> Result {
             let who = ensure_signed(origin)?;
             if let Some(mut domain_info) = <Domains<T>>::get(domain.clone()) {
                 ensure!(domain_info.owner == who, "you don't own the domain");
-                domain_info.price = price;
+                domain_info.price = Some((<AssetIdOf<T> as As<u64>>::sa(16000), <BalanceOf<T> as As<u64>>::sa(price)));
                 <Domains<T>>::insert(domain, domain_info);
                 return Ok(());
             }
@@ -110,8 +115,9 @@ decl_module! {
             let who = ensure_signed(origin)?;
             if let Some(domain_info) = <Domains<T>>::get(domain.clone()) {
                 ensure!(domain_info.owner != who, "you already owned the domain");
-                ensure!(domain_info.price != 0, "the domain is not for sale");
-                // <balances::Module<T>>::transfer(&who, &domain_info.owner, domain_info.price)?;
+                ensure!(domain_info.price != None, "the domain is not for sale");
+                let price = domain_info.price.unwrap();
+                <generic_asset::Module<T>>::make_transfer_with_event(&price.0, &who, &domain_info.owner, price.1)?;
                 <Domains<T>>::remove(domain.clone());
                 let sub_domain_count = <SubDomainsCount<T>>::get(domain.clone());
                 for index in 0..sub_domain_count {
@@ -123,7 +129,7 @@ decl_module! {
 
                 <Domains<T>>::insert(domain, Domain{
                     owner: who,
-                    price: 0,
+                    price: None,
                 });
                 return Ok(());
             }
@@ -137,9 +143,9 @@ decl_module! {
                 ensure!(!<Addresses<T>>::exists((domain.clone(), sub_domain.clone())), "sub domain is already exists");
                 <Addresses<T>>::insert((domain.clone(), sub_domain.clone()), address);
                 let sub_domain_count = Self::sub_domain_count(&domain.clone());
+                <SubDomains<T>>::insert((domain.clone(), sub_domain_count), sub_domain);
                 let new_sub_domain_count = sub_domain_count.checked_add(1)
                                 .ok_or("add_sub_domain causes overflow of sub_domain_count")?;
-                <SubDomains<T>>::insert((domain.clone(), new_sub_domain_count), sub_domain);
                 <SubDomainsCount<T>>::insert(domain.clone(), new_sub_domain_count);
                 return Ok(());
             }
